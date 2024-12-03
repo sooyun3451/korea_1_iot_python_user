@@ -1,12 +1,58 @@
-from tkinter.constants import E
-
-from pymysql import cursors, connect
-from dataclasses import dataclass
+from pymysql import cursors
 
 from src.config.database_config import DatabaseConfig
 from src.entity.user_entity import User
 
 class UserRepository:
+
+  @staticmethod
+  def delete(userId: int):
+    successCount = 0
+    try:
+      connection = DatabaseConfig.getConnection()
+      try:
+        cursor = connection.cursor()
+        sql = 'delete from user_tb where user_id = %s'
+        successCount = cursor.execute(query=sql, args=(userId, ))
+        connection.commit()
+      except Exception as e:
+        print(e)
+      finally:
+        connection.close()
+    except Exception as e:
+      print("데이터베이스 연결 실패")
+    return successCount
+
+
+  @staticmethod
+  def findAll():
+    foundUsers = []
+
+    try:
+      connection = DatabaseConfig.getConnection()
+      try:
+        cursor = connection.cursor(cursor=cursors.DictCursor)
+        sql = 'select * from user_tb order by user_id'
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        if len(result) > 0:
+          foundUsers = list(map(lambda user: User(
+            userId=user['user_id'],
+            username=user['username'],
+            password=user['password'],
+            name=user['name'],
+            email=user['email'],
+            createDate=user['create_date'],
+            updateDate=user['update_date']
+          ), result))
+      except Exception as e:
+        print(e)
+      finally:
+        connection.close()
+    except Exception as e:
+      print("데이터베이스 연결 실패")
+    return foundUsers
+
 
   @staticmethod
   def findByUsername(username: str):
@@ -38,6 +84,7 @@ class UserRepository:
       print("데이터베이스 연결 실패")
 
     return foundUser
+
 
   @staticmethod
   def saveUser(user: User):

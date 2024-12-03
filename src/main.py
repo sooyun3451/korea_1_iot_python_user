@@ -1,5 +1,6 @@
 from src.entity.user_entity import User
 from src.view.signup import SigUpView
+from src.repository.user_repository import UserRepository
 
 def main():
     signupView = SigUpView()
@@ -18,12 +19,31 @@ def main():
 
         if selectedMenu == "1":
             signupView.showSignup()
+
         elif selectedMenu == "2":
-            pass
+            username = input("username >>> ")
+            foundUser = UserRepository.findByUsername(username)
+            print(foundUser if bool(foundUser) else "해당 사용자 이름의 정보가 존재하지 않습니다.")
+
         elif selectedMenu == "3":
-            pass
+            foundUsers = UserRepository.findAll()
+            for user in foundUsers:
+                print(user)
+
         elif selectedMenu == "4":
-            pass
+            username = input("username >>>")
+            foundUser = UserRepository.findByUsername(username)
+            if not bool(foundUser):
+                print("해당 사용자 이름은 존재하지 않습니다.")
+                continue
+            password = input("password >>>")
+            if foundUser.password != password:
+                print("비밀번호가 일치하지 않습니다.")
+                continue
+            if input("사용자를 삭제하시겠습니다? (y/n)") in ('y', 'Y'):
+                if UserRepository.delete(foundUser.userId) > 0:
+                    print(f'삭제된 사용자 정보 >>> {foundUser}')
+
 
 if __name__ == "__main__":
     main()
